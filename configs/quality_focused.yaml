@@ -1,0 +1,100 @@
+# Quality-Focused Configuration
+# ==============================
+# Optimized for highest quality Vedic astrology Q&A generation
+# Recommended for: Claude 3.5 Sonnet, GPT-4 Turbo, Llama 3 70B
+
+# Generation Pipeline Settings
+generation:
+  templates_enabled: true      # Include curated templates
+  pdf_extraction_enabled: true
+  llm_generation_enabled: true
+  seed: 42
+
+# PDF Extraction - Optimized for maximum context
+extraction:
+  chunk_size: 1500            # Larger chunks for more context
+  chunk_overlap: 200          # More overlap for continuity
+  min_chunk_size: 200         # Skip tiny chunks
+  preserve_structure: true
+
+# LLM Settings - Choose one of the options below
+
+# OPTION 1: Llama 3 70B via Groq (RECOMMENDED - Best Value)
+# Quality: 8.5/10 | Cost: $5.40 for 30 PDFs | Speed: FASTEST
+llm:
+  provider: "openai"
+  base_url: "https://api.groq.com/openai/v1"
+  api_key_env: "GROQ_API_KEY"
+  model: "llama3-70b-8192"
+  temperature: 0.2            # Low temperature for accuracy
+  max_tokens: 4096
+  top_p: 0.9
+  qa_pairs_per_chunk: 4
+  request_timeout: 180
+
+# OPTION 2: Claude 3.5 Sonnet (Highest Quality)
+# Quality: 9.5/10 | Cost: $18-27 for 30 PDFs
+# Uncomment below to use Claude instead:
+# llm:
+#   provider: "anthropic"
+#   model: "claude-3-5-sonnet-20241022"
+#   temperature: 0.2
+#   max_tokens: 8192
+#   top_p: 0.9
+#   qa_pairs_per_chunk: 4
+#   request_timeout: 180
+
+# Quality Filter Settings - Strict
+quality:
+  min_question_length: 25     # Longer questions
+  min_answer_length: 50       # Detailed answers
+  min_answer_words: 15        # Minimum word count
+  similarity_threshold: 0.90  # Aggressive deduplication
+  use_semantic_dedup: true    # Use embeddings for better dedup
+
+# Diversity Settings - Maximum variation
+diversity:
+  max_pattern_ratio: 0.12     # Stricter limit (12% max per pattern)
+  balance_dataset: true
+
+# Augmentation Settings - High quality only
+augmentation:
+  enabled: true
+  augmentations_per_item: 2
+  methods:
+    - term_swap              # Sanskrit term variations
+    - paraphrase             # Rephrase questions
+    - question_transform     # Change question type
+
+# Output Settings
+output:
+  format: jsonl
+  include_metadata: true
+
+# Alternative: GPT-4 Turbo Configuration
+llm_gpt4:
+  provider: "openai"
+  model: "gpt-4-turbo-preview"
+  temperature: 0.2
+  max_tokens: 4096
+  qa_pairs_per_chunk: 4
+
+# Alternative: Llama 3 70B via Groq (Best Value)
+llm_llama3_70b:
+  provider: "openai"
+  base_url: "https://api.groq.com/openai/v1"
+  api_key_env: "GROQ_API_KEY"
+  model: "llama3-70b-8192"
+  temperature: 0.2
+  max_tokens: 4096
+  qa_pairs_per_chunk: 4
+
+# Alternative: Llama 3 70B via Together.ai
+llm_llama3_together:
+  provider: "openai"
+  base_url: "https://api.together.xyz/v1"
+  api_key_env: "TOGETHER_API_KEY"
+  model: "meta-llama/Llama-3-70b-chat-hf"
+  temperature: 0.2
+  max_tokens: 8192
+  qa_pairs_per_chunk: 4
