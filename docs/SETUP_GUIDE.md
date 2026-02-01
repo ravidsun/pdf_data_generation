@@ -1,11 +1,13 @@
 # Setup Guide - Llama 3 70B via Groq
 ## High-Quality Vedic Astrology Q&A Dataset Generation
+### (Local Processing on Your Machine)
 
 **For 30 PDFs (300-400 pages each):**
 - 💰 Cost: $5.40
 - 🎯 Quality: 8.5/10
 - 📊 Output: 13,500-16,500 Q&A pairs
 - ⏱️ Time: 3-6 hours
+- 📍 Location: Runs locally on your Windows/Mac/Linux machine
 
 ---
 

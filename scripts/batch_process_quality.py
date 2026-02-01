@@ -29,7 +29,13 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
 from vedic_astro_gen import VedicQAGenerator, GenerationConfig
-from vedic_astro_gen.utils.config_loader import load_config
+import yaml
+
+
+def load_config(config_path: str) -> dict:
+    """Load YAML configuration file."""
+    with open(config_path, 'r', encoding='utf-8') as f:
+        return yaml.safe_load(f)
 
 
 class QualityChecker:
@@ -131,40 +137,56 @@ class QualityBatchProcessor:
 
     def _load_config(self) -> GenerationConfig:
         """Load quality-focused configuration."""
-        print(f"Loading quality-focused configuration from {self.config_path}...")
+        print(f"Loading configuration from {self.config_path}...")
 
         config_data = load_config(self.config_path)
 
-        # Convert to GenerationConfig
-        config = GenerationConfig(
-            # LLM settings
-            llm_generation_enabled=True,
-            llm_provider=config_data.get("llm", {}).get("provider", "anthropic"),
-            llm_model=config_data.get("llm", {}).get("model"),
-            llm_base_url=config_data.get("llm", {}).get("base_url"),
-            llm_api_key_env=config_data.get("llm", {}).get("api_key_env"),
-            llm_temperature=config_data.get("llm", {}).get("temperature", 0.2),
-            llm_max_tokens=config_data.get("llm", {}).get("max_tokens", 8192),
+        # Set environment variables for Groq if needed
+        llm_config = config_data.get("llm", {})
+        if llm_config.get("provider") == "openai" and llm_config.get("base_url"):
+            # For Groq: set base URL via environment
+            os.environ["OPENAI_API_BASE"] = llm_config["base_url"]
+            api_key_env = llm_config.get("api_key_env", "GROQ_API_KEY")
+            if api_key_env in os.environ:
+                os.environ["OPENAI_API_KEY"] = os.environ[api_key_env]
 
-            # Processing settings
-            qa_pairs_per_chunk=config_data.get("llm", {}).get("qa_pairs_per_chunk", 4),
-            batch_size=config_data.get("llm", {}).get("batch_size", 1),
-            request_timeout=config_data.get("llm", {}).get("request_timeout", 180),
+        # Convert to GenerationConfig (only use supported fields)
+        config = GenerationConfig(
+            # Generation settings
+            templates_enabled=config_data.get("generation", {}).get("templates_enabled", True),
+            pdf_extraction_enabled=config_data.get("generation", {}).get("pdf_extraction_enabled", True),
+            llm_generation_enabled=True,
+
+            # LLM settings
+            llm_provider=llm_config.get("provider", "openai"),
+            llm_model=llm_config.get("model", "llama3-70b-8192"),
+            qa_pairs_per_chunk=llm_config.get("qa_pairs_per_chunk", 4),
 
             # Extraction settings
             chunk_size=config_data.get("extraction", {}).get("chunk_size", 1500),
             chunk_overlap=config_data.get("extraction", {}).get("chunk_overlap", 200),
+            min_chunk_size=config_data.get("extraction", {}).get("min_chunk_size", 200),
 
             # Quality settings
             min_question_length=config_data.get("quality", {}).get("min_question_length", 25),
             min_answer_length=config_data.get("quality", {}).get("min_answer_length", 50),
+            min_answer_words=config_data.get("quality", {}).get("min_answer_words", 15),
             similarity_threshold=config_data.get("quality", {}).get("similarity_threshold", 0.90),
+
+            # Diversity settings
+            max_pattern_ratio=config_data.get("diversity", {}).get("max_pattern_ratio", 0.12),
+
+            # Augmentation settings
+            augmentation_enabled=config_data.get("augmentation", {}).get("enabled", True),
+            augmentations_per_item=config_data.get("augmentation", {}).get("augmentations_per_item", 2),
 
             # Output settings
             output_format=config_data.get("output", {}).get("format", "jsonl"),
             include_metadata=config_data.get("output", {}).get("include_metadata", True),
         )
 
+        print(f"Model: {config.llm_model}")
+        print(f"Provider: {config.llm_provider}")
         return config
 
     def find_pdfs(self) -> List[Path]:

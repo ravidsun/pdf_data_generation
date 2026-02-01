@@ -7,7 +7,9 @@
       "Bash(then ls -la data/raw/*.pdf)",
       "Bash(else echo \"data/raw directory not found\")",
       "Bash(fi)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(python scripts/batch_process_quality.py:*)",
+      "Bash(git add:*)"
     ]
   }
 }
